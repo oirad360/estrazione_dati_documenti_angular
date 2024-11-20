@@ -1,0 +1,15 @@
+<div class="chat-container">
+    <div class="chat-messages">
+        <div *ngFor="let message of displayMessages" class="message">
+            <b>{{ message.role }}:</b>
+            <span *ngIf="message.content">{{ message.content }}</span>
+            <img *ngIf="message.type === 'image_url'" [src]="message.image_url.url" alt="Immagine caricata" />
+        </div>
+    </div>
+
+    <div class="chat-input">
+        <textarea [(ngModel)]="userInput" placeholder="Scrivi un messaggio..."></textarea>
+        <input type="file" multiple (change)="handleImageUpload($event)" />
+        <button [disabled]="loading" (click)="sendMessage()">Invia</button>
+    </div>
+</div>
