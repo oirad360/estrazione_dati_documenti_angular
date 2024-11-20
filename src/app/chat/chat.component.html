@@ -10,6 +10,6 @@
     <div class="chat-input">
         <textarea [(ngModel)]="userInput" placeholder="Scrivi un messaggio..."></textarea>
         <input #fileInput type="file" multiple (change)="handleImageUpload($event)" />
-        <button [disabled]="loading" (click)="sendMessage()">Invia</button>
+        <button [disabled]="loading || (userInput === '' && fileInput.files?.length === 0)" (click)="sendMessage()">Invia</button>
     </div>
 </div>

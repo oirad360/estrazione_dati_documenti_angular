@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, from, Observable } from 'rxjs';
+import { BehaviorSubject, forkJoin, from, Observable, tap } from 'rxjs';
 import OpenAI from 'openai';
 import { environment } from '../environment';
 // import {
@@ -73,29 +73,15 @@ export class OpenAIService {
             }
         }
     ];
-    sendMessageResponse: BehaviorSubject<String | null> = new BehaviorSubject<String | null>('')
-
+    sendMessageResponse: BehaviorSubject<string | null> = new BehaviorSubject<string | null>('')
+    private functionsMap: Record<string, Function> = {
+        'estrazioneDatiPatente': this.estrazioneDatiPatente.bind(this),
+        'estrazioneDatiCartaDiIdentitaElettronica': this.estrazioneDatiCartaDiIdentitaElettronica.bind(this)
+    }
     constructor() {
     }
 
-    // Metodo per inviare messaggi e immagini
-    sendMessage(userInput: string, images?: any) {
-        if (!!images)
-            this.messages.push(images)
-        this.messages.push({role: 'user', content: userInput})
-        console.log(this.messages)
-        from(
-            this.client.chat.completions.create({
-                model: 'gpt-4o-2024-08-06',
-                messages: this.messages,
-                tools: this.tools
-            })
-        ).subscribe((res /*ChatCompletion*/) => {
-            this.sendMessageResponse.next(res.choices[0].message.content)
-        })
-    }
-
-    estrazioneDatiPatente(urls: String[]) {
+    estrazioneDatiPatente(base64images: string[]) {
         return from(
             this.client.chat.completions.create({
                 model: 'ft:gpt-4o-2024-08-06:blue-financial-services-it::ARK5a1Au',
@@ -106,15 +92,14 @@ export class OpenAIService {
                     },
                     {
                         role: 'user',
-                        content: JSON.stringify(urls.map((url) => ({ type: 'image_url', image_url: { url } })))/* as ChatCompletionContentPartImage[],*/
+                        content: base64images.map((url) => ({ type: 'image_url', image_url: { url } }))/* as ChatCompletionContentPartImage[],*/
                     },
                 ],
             })
         );
     }
 
-    estrazioneDatiCartaDiIdentitaElettronica(urls: String[]) {
-        const content = urls.map((url) => ({ type: 'image_url', image_url: { url } }))
+    estrazioneDatiCartaDiIdentitaElettronica(base64images: string[]) {
         return from(
             this.client.chat.completions.create({
                 model: 'ft:gpt-4o-2024-08-06:blue-financial-services-it::ATVIL1Ws',
@@ -125,11 +110,81 @@ export class OpenAIService {
                     },
                     {
                         role: 'user',
-                        content: JSON.stringify(urls.map((url) => ({ type: 'image_url', image_url: { url } })))/* as ChatCompletionContentPartImage[],*/
+                        content: base64images.map((url) => ({ type: 'image_url', image_url: { url } }))/* as ChatCompletionContentPartImage[],*/
                     },
                 ],
             })
         );
+    }
+
+    // Metodo per inviare messaggi e immagini
+    sendMessage(userInput: string, imagesInputHistory: any, imagesInputContent?: any) {
+        if (!!imagesInputContent)
+            this.messages.push(imagesInputContent)
+        this.messages.push({role: 'user', content: userInput})
+        console.log(this.messages)
+        from(
+            this.client.chat.completions.create({
+                model: 'gpt-4o-2024-08-06',
+                messages: this.messages,
+                tools: this.tools
+            })
+        ).subscribe((res /*ChatCompletion*/) => {
+            // this.sendMessageResponse.next(res.choices[0].message.content)
+            const response = res.choices[0].message
+            this.messages.push(response)
+            if (response.tool_calls) {
+                // Gestisci tutte le chiamate ai tool
+                const toolCalls = response.tool_calls;
+
+                forkJoin(
+                    toolCalls.map((toolCall) => {
+                        console.log('Chiamata al tool:', toolCall.function.name);
+
+                        // Decodifica gli argomenti dalla chiamata
+                        const argumentss = JSON.parse(toolCall.function.arguments);
+                        const paths = argumentss['paths'] || [];
+
+                        // Esegui la funzione appropriata
+                        if (this.functionsMap[toolCall.function.name]) {
+                            return this.functionsMap[toolCall.function.name](paths.map((path: string) => imagesInputHistory[path])).pipe(
+                                tap((toolResponse: any) => {
+                                    console.log('Risultato funzione:', toolResponse);
+
+                                    // Aggiungi il risultato al contesto come tool
+                                    const functionResultMessage = {
+                                        role: 'tool',
+                                        content: toolResponse.choices[0].message.content,
+                                        tool_call_id: toolCall.id,
+                                    };
+                                    this.messages.push(functionResultMessage);
+                                })
+                            );
+                        } else {
+                            console.warn('Tool non supportato:', toolCall.function.name);
+                            return [];
+                        }
+                    })
+                ).subscribe({
+                    next: () => {
+                        // Dopo aver gestito tutte le chiamate ai tool, invia il contesto aggiornato al modello
+                        from(
+                            this.client.chat.completions.create({
+                                model: 'gpt-4o-2024-08-06',
+                                messages: this.messages,
+                            })
+                        ).subscribe((completion) => {
+                            console.log('Risposta finale:', completion.choices[0].message.content);
+                            this.sendMessageResponse.next(completion.choices[0].message.content);
+                            this.messages.push(completion.choices[0].message);
+                        })
+                    },
+                    error: (err) => console.error('Errore nella gestione delle tool_calls:', err),
+                });
+            } else {
+                this.sendMessageResponse.next(res.choices[0].message.content)
+            }
+        })
     }
 
     // Metodo per codificare immagini in Base64

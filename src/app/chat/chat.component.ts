@@ -18,7 +18,9 @@ import { NgForOf, NgIf } from '@angular/common';
 export class ChatComponent implements OnInit {
 
     displayMessages: any[] = []
-    images: any;
+    imagesInputContent: any;
+    imagesInput: Record<string, string> = {};
+    imagesInputHistory: Record<string, string> = {};
     userInput: string = '';
     loading: boolean = false;
     @ViewChild('fileInput') fileInput: any;
@@ -27,6 +29,7 @@ export class ChatComponent implements OnInit {
 
     ngOnInit(): void {
         this.openAIService.sendMessageResponse.subscribe((res) => {
+            this.loading = false
             if (!!res) {
                 this.displayMessages.push({ role: 'assistant', content: res })
             }
@@ -39,29 +42,18 @@ export class ChatComponent implements OnInit {
         this.displayMessages.push({ role: 'user', content: this.userInput });
         this.loading = true;
 
-        if (!!this.images) {
-            const paths = Object.keys(JSON.parse(localStorage.getItem('estrazione_dati')??'')).join('\n');
+        if (!!this.imagesInputContent) {
+            const paths = Object.keys(this.imagesInput).join('\n');
             this.userInput = `${this.userInput}\n\npaths:\n${paths}`;
             this.fileInput.nativeElement.value = '';
         }
 
+        for (let imagesInputKey in this.imagesInput) {
+            this.imagesInputHistory[imagesInputKey] = this.imagesInput[imagesInputKey]
+        }
 
-        this.openAIService
-            .sendMessage(this.userInput, this.images)
-            // .pipe(
-            //     catchError((error) => {
-            //         console.error('Errore nella risposta:', error);
-            //         return of({ choices: [{ message: { role: 'assistant', content: 'Errore nel completamento' } }] });
-            //     })
-            // )
-            // .subscribe((response) => {
-            //     // this.messages.push(response.choices[0].message);
-            //     if (response.choices[0].message.tool_calls) {
-            //         const tool_call = response.choices[0].message.tool_calls[0]
-            //         const argumentss = tool_call.function.arguments
-            //     }
-            //     this.loading = false;
-            // });
+        this.openAIService.sendMessage(this.userInput, this.imagesInputHistory, this.imagesInputContent)
+
         this.userInput = '';
     }
 
@@ -71,16 +63,15 @@ export class ChatComponent implements OnInit {
 
         this.loading = true;
 
-        // Mappa per salvare i dati nel localStorage
-        const localStorageMap: Record<string, string> = {};
-        localStorage.removeItem('estrazione_dati')
+        this.imagesInput = {}
 
         const imageEncodingObservables = Array.from(files as File[]).map((file: File) => {
             return this.openAIService.encodeImage(file).pipe(
                 // Salva nel localStorage la mappa file -> base64
                 tap((base64String) => {
                     const fileName = file.name;
-                    localStorageMap[fileName] = base64String;
+                    const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+                    this.imagesInput[uniqueId + '/' + fileName] = base64String;
                 })
             );
         });
@@ -89,8 +80,7 @@ export class ChatComponent implements OnInit {
         forkJoin(imageEncodingObservables).subscribe({
             next: (imageUrls) => {
                 const formattedImages = imageUrls.map((url) => ({ type: 'image_url', image_url: { url } }));
-                this.images = { role: 'user', content: formattedImages };
-                localStorage.setItem('estrazione_dati', JSON.stringify(localStorageMap));
+                this.imagesInputContent = { role: 'user', content: formattedImages };
             },
             error: (error) => console.error('Errore nel caricamento immagini:', error),
             complete: () => {
