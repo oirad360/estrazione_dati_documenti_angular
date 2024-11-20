@@ -79,8 +79,11 @@ export class OpenAIService {
     }
 
     // Metodo per inviare messaggi e immagini
-    sendMessage(userInput: string) {
+    sendMessage(userInput: string, images?: any) {
+        if (!!images)
+            this.messages.push(images)
         this.messages.push({role: 'user', content: userInput})
+        console.log(this.messages)
         from(
             this.client.chat.completions.create({
                 model: 'gpt-4o-2024-08-06',
