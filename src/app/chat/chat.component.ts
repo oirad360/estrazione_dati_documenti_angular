@@ -75,6 +75,8 @@ export class ChatComponent implements OnInit {
         const files = event.target.files;
         if (!files || files.length === 0) return;
 
+        console.log(files)
+
         const imageEncodingObservables = Array.from(files as File[]).map((file: File) => {
             return this.openAIService.encodeImage(file).pipe(
                 // Salva nel localStorage la mappa file -> base64
@@ -96,9 +98,12 @@ export class ChatComponent implements OnInit {
                 } else {
                     this.imagesInputContent = { role: 'user', content: content };
                 }
+                console.log(this.imagesInputContent)
             },
             error: (error) => console.error('Errore nel caricamento immagini:', error),
         });
+
+        event.target.value = null;
     }
 
     removeImage(index: number) {

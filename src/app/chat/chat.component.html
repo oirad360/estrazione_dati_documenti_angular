@@ -3,23 +3,21 @@
         <div *ngFor="let message of displayMessages" class="message" [ngClass]="message.role">
             <!-- Messaggio utente (nuvoletta a destra) -->
             <div *ngIf="message.role === 'user'" class="bubble user">
-                <b>Tu:</b> {{ message.content }}
+                {{ message.content }}
+                <div *ngIf="message.images && message.images.length > 0" class="image-previews user-images">
+                    <img
+                            *ngFor="let img of message.images"
+                            [src]="img"
+                            alt="Anteprima immagine"
+                            class="image-preview"
+                            (click)="openImageModal(img)"
+                    />
+                </div>
             </div>
 
             <!-- Messaggio assistente (testo a tutta larghezza) -->
             <div *ngIf="message.role === 'assistant'" class="assistant-message">
                 <markdown *ngIf="message.content" [data]="message.content"></markdown>
-            </div>
-
-            <!-- Anteprime delle immagini inviate -->
-            <div *ngIf="message.images && message.images.length > 0" class="image-previews">
-                <img
-                        *ngFor="let img of message.images"
-                        [src]="img"
-                        alt="Anteprima immagine"
-                        class="image-preview"
-                        (click)="openImageModal(img)"
-                />
             </div>
         </div>
     </div>
@@ -33,10 +31,19 @@
     </div>
 
     <div class="chat-input">
-        <textarea [(ngModel)]="userInput" placeholder="Scrivi un messaggio..."></textarea>
-        <input #fileInput type="file" multiple (change)="handleImageUpload($event)" />
-        <button [disabled]="loading || (userInput === '' && imagesPreview.length === 0)" (click)="sendMessage()">Invia</button>
+        <div class="input-bar">
+            <button class="icon-button attach-button" (click)="fileInput.click()">
+                <i class="fa fa-paperclip"></i>
+            </button>
+            <input #fileInput type="file" multiple (change)="handleImageUpload($event)" />
+            <textarea [(ngModel)]="userInput" placeholder="Scrivi un messaggio..." class="input-text"></textarea>
+            <button class="icon-button send-button" (click)="sendMessage()" [disabled]="loading || (!userInput.trim() && imagesPreview.length === 0)">
+                <i class="fa fa-paper-plane"></i>
+            </button>
+        </div>
+
     </div>
+
 
     <!-- Modale immagine -->
     <div class="modal" *ngIf="selectedImage" (click)="closeImageModal()">
