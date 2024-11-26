@@ -2,7 +2,7 @@
     <div class="chat-messages">
         <div *ngFor="let message of displayMessages" class="message">
             <b>{{ message.role }}: </b>
-            <span *ngIf="message.content">{{ message.content }}</span>
+            <markdown *ngIf="message.content" [data]="message.content"></markdown>
 
             <!-- Anteprime delle immagini inviate -->
             <div *ngIf="message.images && message.images.length > 0" class="image-previews">

@@ -2,12 +2,6 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, forkJoin, from, Observable, tap } from 'rxjs';
 import OpenAI from 'openai';
 import { environment } from '../environment';
-// import {
-//     ChatCompletion,
-//     ChatCompletionContentPartImage,
-//     ChatCompletionMessageParam,
-//     ChatCompletionTool
-// } from 'openai/src/resources/chat/completions';
 
 
 @Injectable({
@@ -18,7 +12,7 @@ export class OpenAIService {
     private messages: any[]/*ChatCompletionMessageParam[]*/ = [
         {
             role: 'system',
-            content: 'Riceverai una o più immagini, analizza il contenuto delle immagini e indica se rappresentano una carta di identità elettronica o una patente, quindi chiama la funzione adatta per estrarne i dati.',
+            content: 'Riceverai una o più immagini, analizza il contenuto delle immagini e indica se rappresentano una carta di identità elettronica o una patente, quindi chiama la funzione adatta per estrarne i dati e presentali come un oggetto JSON, in cui inserisci come chiave il nome dell\'informazione e come valore l\'informazione stessa. Se ricevi in ingresso un documento, dopo aver ottenuto il risultato, presentalo elegantemente, per esempio: "Ecco i dati estratti dalla patente: { "nome": "Mario", "cognome": "Rossi", "dataDiNascita": "10/08/1999" }"'
         },
     ];
     private tools: any[]/*ChatCompletionTool[]*/ = [

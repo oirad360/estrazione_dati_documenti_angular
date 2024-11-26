@@ -3,6 +3,7 @@ import { forkJoin, tap } from 'rxjs';
 import { OpenAIService } from '../openai.service';
 import { FormsModule } from '@angular/forms';
 import { NgForOf, NgIf } from '@angular/common';
+import { MarkdownComponent, MarkdownModule } from 'ngx-markdown';
 
 @Component({
     selector: 'app-chat',
@@ -11,13 +12,14 @@ import { NgForOf, NgIf } from '@angular/common';
     imports: [
         FormsModule,
         NgIf,
-        NgForOf
+        NgForOf,
+        MarkdownComponent
     ],
     standalone: true
 })
 export class ChatComponent implements OnInit {
 
-    displayMessages: any[] = [];
+    displayMessages: {role: string, content: string, images?: string[]}[] = [];
     imagesInputContent: any;
     imagesInput: Record<string, string> = {};
     imagesInputHistory: Record<string, string> = {};

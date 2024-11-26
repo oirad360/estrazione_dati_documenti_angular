@@ -35,15 +35,6 @@ input[type='file'] {
     flex: 1;
 }
 
-/*.chat-container img {
-    max-width: 150px;
-    max-height: 150px;
-    object-fit: cover;
-    border-radius: 4px;
-    margin-top: 4px;
-}*/
-
-
 .image-previews {
     display: flex;
     gap: 8px;
@@ -120,5 +111,31 @@ input[type='file'] {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     cursor: pointer;
 }
+
+/* Stile personalizzato per contenuto Markdown */
+markdown {
+    display: block;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    white-space: pre-wrap;
+}
+
+markdown h1, markdown h2, markdown h3 {
+    color: #333;
+}
+
+markdown p {
+    margin: 0.5em 0;
+}
+
+markdown code {
+    background-color: #f4f4f4;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
 
 
