@@ -6,11 +6,13 @@
 
             <!-- Anteprime delle immagini inviate -->
             <div *ngIf="message.images && message.images.length > 0" class="image-previews">
-                <img *ngFor="let img of message.images" [src]="img" alt="Anteprima immagine" class="image-preview" />
+                <img
+                        *ngFor="let img of message.images"
+                        [src]="img"
+                        alt="Anteprima immagine"
+                        class="image-preview"
+                        (click)="openImageModal(img)" />
             </div>
-
-            <!-- Anteprime delle immagini dal tipo image_url -->
-            <img *ngIf="message.type === 'image_url'" [src]="message.image_url.url" alt="Immagine caricata" />
         </div>
     </div>
 
@@ -22,10 +24,14 @@
         </div>
     </div>
 
-
     <div class="chat-input">
         <textarea [(ngModel)]="userInput" placeholder="Scrivi un messaggio..."></textarea>
         <input #fileInput type="file" multiple (change)="handleImageUpload($event)" />
         <button [disabled]="loading || (userInput === '' && imagesPreview.length === 0)" (click)="sendMessage()">Invia</button>
+    </div>
+
+    <!-- Modale immagine -->
+    <div class="modal" *ngIf="selectedImage" (click)="closeImageModal()">
+        <img [src]="selectedImage" alt="Immagine originale" class="modal-image" />
     </div>
 </div>

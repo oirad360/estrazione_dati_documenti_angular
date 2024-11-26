@@ -17,24 +17,25 @@ import { NgForOf, NgIf } from '@angular/common';
 })
 export class ChatComponent implements OnInit {
 
-    displayMessages: any[] = []
+    displayMessages: any[] = [];
     imagesInputContent: any;
     imagesInput: Record<string, string> = {};
     imagesInputHistory: Record<string, string> = {};
     imagesPreview: string[] = [];
     userInput: string = '';
     loading: boolean = false;
+    selectedImage: string | null = null; // Immagine selezionata per la modale
     @ViewChild('fileInput') fileInput: any;
 
     constructor(private openAIService: OpenAIService) {}
 
     ngOnInit(): void {
         this.openAIService.sendMessageResponse.subscribe((res) => {
-            this.loading = false
+            this.loading = false;
             if (!!res) {
-                this.displayMessages.push({ role: 'assistant', content: res })
+                this.displayMessages.push({ role: 'assistant', content: res });
             }
-        })
+        });
     }
 
     sendMessage() {
@@ -66,7 +67,6 @@ export class ChatComponent implements OnInit {
         this.imagesInput = {};
         this.imagesPreview = [];
     }
-
 
     handleImageUpload(event: any) {
         const files = event.target.files;
@@ -108,4 +108,11 @@ export class ChatComponent implements OnInit {
         }
     }
 
+    openImageModal(image: string) {
+        this.selectedImage = image;
+    }
+
+    closeImageModal() {
+        this.selectedImage = null;
+    }
 }
