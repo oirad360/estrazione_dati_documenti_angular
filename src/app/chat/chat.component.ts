@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { forkJoin, tap } from 'rxjs';
 import { OpenAIService } from '../openai.service';
 import { FormsModule } from '@angular/forms';
-import { NgForOf, NgIf } from '@angular/common';
+import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { MarkdownComponent, MarkdownModule } from 'ngx-markdown';
 
 @Component({
@@ -13,7 +13,8 @@ import { MarkdownComponent, MarkdownModule } from 'ngx-markdown';
         FormsModule,
         NgIf,
         NgForOf,
-        MarkdownComponent
+        MarkdownComponent,
+        NgClass
     ],
     standalone: true
 })

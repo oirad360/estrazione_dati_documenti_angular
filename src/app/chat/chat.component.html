@@ -1,8 +1,15 @@
 <div class="chat-container">
     <div class="chat-messages">
-        <div *ngFor="let message of displayMessages" class="message">
-            <b>{{ message.role }}: </b>
-            <markdown *ngIf="message.content" [data]="message.content"></markdown>
+        <div *ngFor="let message of displayMessages" class="message" [ngClass]="message.role">
+            <!-- Messaggio utente (nuvoletta a destra) -->
+            <div *ngIf="message.role === 'user'" class="bubble user">
+                <b>Tu:</b> {{ message.content }}
+            </div>
+
+            <!-- Messaggio assistente (testo a tutta larghezza) -->
+            <div *ngIf="message.role === 'assistant'" class="assistant-message">
+                <markdown *ngIf="message.content" [data]="message.content"></markdown>
+            </div>
 
             <!-- Anteprime delle immagini inviate -->
             <div *ngIf="message.images && message.images.length > 0" class="image-previews">
@@ -11,7 +18,8 @@
                         [src]="img"
                         alt="Anteprima immagine"
                         class="image-preview"
-                        (click)="openImageModal(img)" />
+                        (click)="openImageModal(img)"
+                />
             </div>
         </div>
     </div>
