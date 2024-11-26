@@ -88,7 +88,32 @@ button:hover {
 .image-previews {
     display: flex;
     gap: 8px;
-    margin-bottom: 8px;
+    padding: 15px;
+}
+
+.image-preview-wrapper {
+    position: relative;
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.remove-icon {
+    display: none;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    cursor: pointer;
+    color: red;
 }
 
 .image-preview {
@@ -98,18 +123,16 @@ button:hover {
     border: 1px solid #ccc;
     border-radius: 4px;
     transition: transform 0.2s ease, filter 0.2s ease;
-    cursor: pointer;
+    cursor: pointer; /* Imposta il cursore come una mano */
 }
 
 .image-preview:hover {
-    filter: brightness(80%);
-    transform: scale(1.05);
+    filter: brightness(80%); /* Rende l'immagine più scura */
+    transform: scale(1.05); /* Leggera espansione per evidenziare */
 }
 
-.image-previews.user-images {
+.image-preview-wrapper:hover .remove-icon {
     display: flex;
-    flex-wrap: wrap; /* Le immagini si dispongono su più righe se necessario */
-    gap: 5px;
 }
 
 /* Modale immagine */
