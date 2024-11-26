@@ -72,8 +72,6 @@ export class ChatComponent implements OnInit {
         const files = event.target.files;
         if (!files || files.length === 0) return;
 
-        this.loading = true;
-
         const imageEncodingObservables = Array.from(files as File[]).map((file: File) => {
             return this.openAIService.encodeImage(file).pipe(
                 // Salva nel localStorage la mappa file -> base64
@@ -97,11 +95,17 @@ export class ChatComponent implements OnInit {
                 }
             },
             error: (error) => console.error('Errore nel caricamento immagini:', error),
-            complete: () => {
-                this.loading = false;
-            },
         });
     }
 
+    removeImage(index: number) {
+        const keys = Object.keys(this.imagesInput); // Ottieni tutte le chiavi di imagesInput
+        const keyToRemove = keys[index]; // Trova la chiave corrispondente all'indice
+
+        if (keyToRemove) {
+            delete this.imagesInput[keyToRemove]; // Rimuovi l'immagine da imagesInput
+            this.imagesPreview.splice(index, 1); // Rimuovi l'anteprima dall'array
+        }
+    }
 
 }

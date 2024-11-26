@@ -1,7 +1,7 @@
 <div class="chat-container">
     <div class="chat-messages">
         <div *ngFor="let message of displayMessages" class="message">
-            <b>{{ message.role }}:</b>
+            <b>{{ message.role }}: </b>
             <span *ngIf="message.content">{{ message.content }}</span>
 
             <!-- Anteprime delle immagini inviate -->
@@ -16,8 +16,12 @@
 
     <!-- Anteprime delle immagini selezionate -->
     <div class="image-previews" *ngIf="imagesPreview.length > 0">
-        <img *ngFor="let preview of imagesPreview" [src]="preview" alt="Anteprima immagine" class="image-preview" />
+        <div class="image-preview-wrapper" *ngFor="let preview of imagesPreview; index as i">
+            <img [src]="preview" alt="Anteprima immagine" class="image-preview" />
+            <div class="remove-icon" (click)="removeImage(i)">&#10006;</div>
+        </div>
     </div>
+
 
     <div class="chat-input">
         <textarea [(ngModel)]="userInput" placeholder="Scrivi un messaggio..."></textarea>
