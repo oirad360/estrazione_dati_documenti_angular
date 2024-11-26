@@ -9,13 +9,13 @@ import { environment } from '../environment';
 })
 export class OpenAIService {
     private client = new OpenAI({apiKey: environment.openai_apikey, dangerouslyAllowBrowser: true});
-    private messages: any[]/*ChatCompletionMessageParam[]*/ = [
+    private messages: any[] = [
         {
             role: 'system',
             content: 'Riceverai una o più immagini, analizza il contenuto delle immagini e indica se rappresentano una carta di identità elettronica o una patente, quindi chiama la funzione adatta per estrarne i dati e presentali come un oggetto JSON, in cui inserisci come chiave il nome dell\'informazione e come valore l\'informazione stessa. Se ricevi in ingresso un documento, dopo aver ottenuto il risultato, presentalo elegantemente, per esempio: "Ecco i dati estratti dalla patente: { "nome": "Mario", "cognome": "Rossi", "dataDiNascita": "10/08/1999" }"'
         },
     ];
-    private tools: any[]/*ChatCompletionTool[]*/ = [
+    private tools: any[] = [
         {
             type: 'function',
             function: {
@@ -104,7 +104,7 @@ export class OpenAIService {
                     },
                     {
                         role: 'user',
-                        content: base64images.map((url) => ({ type: 'image_url', image_url: { url } }))/* as ChatCompletionContentPartImage[],*/
+                        content: base64images.map((url) => ({ type: 'image_url', image_url: { url } }))
                     },
                 ],
             })
@@ -122,8 +122,7 @@ export class OpenAIService {
                 messages: this.messages,
                 tools: this.tools
             })
-        ).subscribe((res /*ChatCompletion*/) => {
-            // this.sendMessageResponse.next(res.choices[0].message.content)
+        ).subscribe((res) => {
             const response = res.choices[0].message
             this.messages.push(response)
             if (response.tool_calls) {

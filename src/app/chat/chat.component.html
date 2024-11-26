@@ -14,11 +14,13 @@
                     />
                 </div>
             </div>
-
             <!-- Messaggio assistente (testo a tutta larghezza) -->
             <div *ngIf="message.role === 'assistant'" class="assistant-message">
                 <markdown *ngIf="message.content" [data]="message.content"></markdown>
             </div>
+        </div>
+        <div *ngIf="loading" class="loading-spinner">
+            <div class="spinner"></div>
         </div>
     </div>
 
@@ -35,13 +37,12 @@
             <button class="icon-button attach-button" (click)="fileInput.click()">
                 <i class="fa fa-paperclip"></i>
             </button>
-            <input #fileInput type="file" multiple (change)="handleImageUpload($event)" />
+            <input #fileInput type="file" multiple (change)="handleImageUpload($event)" accept="image/*" />
             <textarea [(ngModel)]="userInput" placeholder="Scrivi un messaggio..." class="input-text"></textarea>
             <button class="icon-button send-button" (click)="sendMessage()" [disabled]="loading || (!userInput.trim() && imagesPreview.length === 0)">
                 <i class="fa fa-paper-plane"></i>
             </button>
         </div>
-
     </div>
 
 
