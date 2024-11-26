@@ -3,13 +3,25 @@
         <div *ngFor="let message of displayMessages" class="message">
             <b>{{ message.role }}:</b>
             <span *ngIf="message.content">{{ message.content }}</span>
+
+            <!-- Anteprime delle immagini inviate -->
+            <div *ngIf="message.images && message.images.length > 0" class="image-previews">
+                <img *ngFor="let img of message.images" [src]="img" alt="Anteprima immagine" class="image-preview" />
+            </div>
+
+            <!-- Anteprime delle immagini dal tipo image_url -->
             <img *ngIf="message.type === 'image_url'" [src]="message.image_url.url" alt="Immagine caricata" />
         </div>
+    </div>
+
+    <!-- Anteprime delle immagini selezionate -->
+    <div class="image-previews" *ngIf="imagesPreview.length > 0">
+        <img *ngFor="let preview of imagesPreview" [src]="preview" alt="Anteprima immagine" class="image-preview" />
     </div>
 
     <div class="chat-input">
         <textarea [(ngModel)]="userInput" placeholder="Scrivi un messaggio..."></textarea>
         <input #fileInput type="file" multiple (change)="handleImageUpload($event)" />
-        <button [disabled]="loading || (userInput === '' && fileInput.files?.length === 0)" (click)="sendMessage()">Invia</button>
+        <button [disabled]="loading || (userInput === '' && imagesPreview.length === 0)" (click)="sendMessage()">Invia</button>
     </div>
 </div>

@@ -21,6 +21,7 @@ export class ChatComponent implements OnInit {
     imagesInputContent: any;
     imagesInput: Record<string, string> = {};
     imagesInputHistory: Record<string, string> = {};
+    imagesPreview: string[] = [];
     userInput: string = '';
     loading: boolean = false;
     @ViewChild('fileInput') fileInput: any;
@@ -37,9 +38,15 @@ export class ChatComponent implements OnInit {
     }
 
     sendMessage() {
-        if (!this.userInput.trim()) return;
+        if (!this.userInput.trim() && Object.keys(this.imagesInput).length === 0) return;
 
-        this.displayMessages.push({ role: 'user', content: this.userInput });
+        const userMessage = {
+            role: 'user',
+            content: this.userInput,
+            images: Object.values(this.imagesInput) // Array di immagini in base64
+        };
+        this.displayMessages.push(userMessage);
+
         this.loading = true;
 
         if (!!this.imagesInputContent) {
@@ -49,21 +56,23 @@ export class ChatComponent implements OnInit {
         }
 
         for (let imagesInputKey in this.imagesInput) {
-            this.imagesInputHistory[imagesInputKey] = this.imagesInput[imagesInputKey]
+            this.imagesInputHistory[imagesInputKey] = this.imagesInput[imagesInputKey];
         }
 
-        this.openAIService.sendMessage(this.userInput, this.imagesInputHistory, this.imagesInputContent)
+        this.openAIService.sendMessage(this.userInput, this.imagesInputHistory, this.imagesInputContent);
 
         this.userInput = '';
+        this.imagesInputContent = null;
+        this.imagesInput = {};
+        this.imagesPreview = [];
     }
+
 
     handleImageUpload(event: any) {
         const files = event.target.files;
         if (!files || files.length === 0) return;
 
         this.loading = true;
-
-        this.imagesInput = {}
 
         const imageEncodingObservables = Array.from(files as File[]).map((file: File) => {
             return this.openAIService.encodeImage(file).pipe(
@@ -72,15 +81,20 @@ export class ChatComponent implements OnInit {
                     const fileName = file.name;
                     const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
                     this.imagesInput[uniqueId + '/' + fileName] = base64String;
+                    this.imagesPreview.push(base64String);
                 })
             );
         });
 
         // Codifica tutte le immagini in parallelo
         forkJoin(imageEncodingObservables).subscribe({
-            next: (imageUrls) => {
-                const formattedImages = imageUrls.map((url) => ({ type: 'image_url', image_url: { url } }));
-                this.imagesInputContent = { role: 'user', content: formattedImages };
+            next: (base64images) => {
+                const content = base64images.map((url) => ({ type: 'image_url', image_url: { url } }));
+                if (!!this.imagesInputContent) {
+                    this.imagesInputContent = { role: 'user', content: [...this.imagesInputContent.content, ...content] };
+                } else {
+                    this.imagesInputContent = { role: 'user', content: content };
+                }
             },
             error: (error) => console.error('Errore nel caricamento immagini:', error),
             complete: () => {

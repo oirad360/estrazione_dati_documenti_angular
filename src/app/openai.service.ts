@@ -122,7 +122,6 @@ export class OpenAIService {
         if (!!imagesInputContent)
             this.messages.push(imagesInputContent)
         this.messages.push({role: 'user', content: userInput})
-        console.log(this.messages)
         from(
             this.client.chat.completions.create({
                 model: 'gpt-4o-2024-08-06',
@@ -139,8 +138,6 @@ export class OpenAIService {
 
                 forkJoin(
                     toolCalls.map((toolCall) => {
-                        console.log('Chiamata al tool:', toolCall.function.name);
-
                         // Decodifica gli argomenti dalla chiamata
                         const argumentss = JSON.parse(toolCall.function.arguments);
                         const paths = argumentss['paths'] || [];
@@ -149,8 +146,6 @@ export class OpenAIService {
                         if (this.functionsMap[toolCall.function.name]) {
                             return this.functionsMap[toolCall.function.name](paths.map((path: string) => imagesInputHistory[path])).pipe(
                                 tap((toolResponse: any) => {
-                                    console.log('Risultato funzione:', toolResponse);
-
                                     // Aggiungi il risultato al contesto come tool
                                     const functionResultMessage = {
                                         role: 'tool',
@@ -174,7 +169,6 @@ export class OpenAIService {
                                 messages: this.messages,
                             })
                         ).subscribe((completion) => {
-                            console.log('Risposta finale:', completion.choices[0].message.content);
                             this.sendMessageResponse.next(completion.choices[0].message.content);
                             this.messages.push(completion.choices[0].message);
                         })
