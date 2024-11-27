@@ -29,6 +29,7 @@ export class ChatComponent implements OnInit {
     loading: boolean = false;
     selectedImage: string | null = null; // Immagine selezionata per la modale
     showScrollButton: boolean = false;  // Variabile per controllare la visibilità del bottone
+    isAutoScrolling = false;
     @ViewChild('chatMessages') chatMessages!: ElementRef; // Riferimento alla chat
     @ViewChild('fileInput') fileInput: any;
 
@@ -43,7 +44,7 @@ export class ChatComponent implements OnInit {
                     if (!this.isUserAtBottom()) {
                         this.checkScrollPosition()
                     }
-                }, 0); // Permette al DOM di aggiornarsi prima dello scroll
+                }, 10); // Permette al DOM di aggiornarsi prima dello scroll
             }
         });
     }
@@ -131,9 +132,9 @@ export class ChatComponent implements OnInit {
     }
 
     isUserAtBottom(): boolean {
-        const chatMessages = this.chatMessages.nativeElement;
+        const chatMessagesElement = this.chatMessages.nativeElement;
         return (
-            chatMessages.scrollHeight - chatMessages.scrollTop <= chatMessages.clientHeight + 10
+            chatMessagesElement.scrollHeight - chatMessagesElement.scrollTop === chatMessagesElement.clientHeight
         );
     }
 
@@ -145,15 +146,27 @@ export class ChatComponent implements OnInit {
             // Effettua lo scroll automatico
             setTimeout(() => {
                 this.scrollToBottom();
-            }, 0); // Permette al DOM di aggiornarsi prima dello scroll
+            }, 10); // Permette al DOM di aggiornarsi prima dello scroll
         }
     }
 
     scrollToBottom() {
+        this.isAutoScrolling = true
         const chatMessagesElement = this.chatMessages.nativeElement;
         chatMessagesElement.scrollTo({
             top: chatMessagesElement.scrollHeight,
             behavior: 'smooth'  // Aggiungi lo scroll fluido
         });
+        const handleScroll = () => {
+            const isAtBottom = chatMessagesElement.scrollHeight - chatMessagesElement.scrollTop === chatMessagesElement.clientHeight;
+
+            if (isAtBottom) {
+                this.isAutoScrolling = false; // Rimuovi il flag solo quando lo scroll è completato
+                this.showScrollButton = false; // Nascondi il pulsante quando siamo in fondo
+                chatMessagesElement.removeEventListener('scroll', handleScroll); // Rimuovi il listener
+            }
+        };
+
+        chatMessagesElement.addEventListener('scroll', handleScroll);
     }
 }

@@ -48,7 +48,7 @@
                 </button>
             </div>
         </div>
-        <button class="scroll-to-bottom-btn" [class.show]="showScrollButton" (click)="scrollToBottom()">
+        <button class="scroll-to-bottom-btn" [class.show]="showScrollButton && !isAutoScrolling" (click)="scrollToBottom()">
             <i class="fas fa-arrow-down"></i>  <!-- Icona freccia verso il basso -->
         </button>
     </div>
