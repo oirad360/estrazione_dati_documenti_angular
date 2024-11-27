@@ -169,4 +169,14 @@ export class ChatComponent implements OnInit {
 
         chatMessagesElement.addEventListener('scroll', handleScroll);
     }
+
+    handleKeyDown(event: KeyboardEvent): void {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            // Blocca il comportamento predefinito di andare a capo
+            event.preventDefault();
+            // Invia il messaggio
+            this.sendMessage();
+        }
+    }
+
 }

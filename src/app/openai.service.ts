@@ -12,7 +12,7 @@ export class OpenAIService {
     private messages: any[] = [
         {
             role: 'system',
-            content: 'Riceverai una o più immagini, analizza il contenuto delle immagini e indica se rappresentano una carta di identità elettronica o una patente, quindi chiama la funzione adatta per estrarne i dati e presentali come un oggetto JSON, in cui inserisci come chiave il nome dell\'informazione e come valore l\'informazione stessa. Se ricevi in ingresso un documento, dopo aver ottenuto il risultato, presentalo elegantemente, per esempio: "Ecco i dati estratti dalla patente: { "nome": "Mario", "cognome": "Rossi", "dataDiNascita": "10/08/1999" }"'
+            content: 'Riceverai una o più immagini, analizza il contenuto delle immagini e indica se rappresentano una carta di identità elettronica o una patente, quindi chiama la funzione adatta per estrarne i dati e presentali elegantemente.'
         },
     ];
     private tools: any[] = [
@@ -20,7 +20,7 @@ export class OpenAIService {
             type: 'function',
             function: {
                 name: 'estrazioneDatiCartaDiIdentitaElettronica',
-                description: 'Estrae i dati da due foto fronte e retro di una carta di identità elettornica utilizzando OCR. Se ricevi in input solo il fronte o solo il retro, avvisa che è necessario averli entrambi.',
+                description: 'Estrae i dati da due foto fronte e retro di una carta di identità elettornica utilizzando OCR. Se ricevi in input solo il fronte o solo il retro, avvisa che è necessario averli entrambi. Se ricevi tanti documenti, devi effettuare tante chiamate alle funzioni di estrazioni quanti sono i documenti ricevuti. Per esempio, se ricevi 2 coppie di foto fronte e retro di 2 carte di identità elettroniche, dovrai chiamare 2 volte la funzione di estrazione assegnando correttamente gli input, quindi la prima chiamata riceverà la prima coppia di foto e la seconda chiamata riceverà la seconda coppia. Potresti anche ricevere patenti e carte di identità assieme, anche in questo caso assegna correttamente gli input a ciascuna chiamata di funzione.',
                 strict: true,
                 parameters: {
                     type: 'object',
