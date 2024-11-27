@@ -54,6 +54,40 @@
     background-color: #f9f9f9;
 }
 
+.scroll-to-bottom-btn {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    padding: 10px 13px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    z-index: 10;
+}
+
+.scroll-to-bottom-btn i {
+    font-size: 20px; /* Imposta la dimensione dell'icona */
+}
+
+.scroll-to-bottom-btn:hover {
+    background-color: #0056b3;  /* Colore al passaggio del mouse */
+}
+
+.scroll-to-bottom-btn:active {
+    background-color: #004085;  /* Colore quando il bottone viene premuto */
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
 /* Chat input */
 .chat-input {
     display: flex;

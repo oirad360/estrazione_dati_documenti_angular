@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { forkJoin, tap } from 'rxjs';
 import { OpenAIService } from '../openai.service';
 import { FormsModule } from '@angular/forms';
@@ -28,6 +28,8 @@ export class ChatComponent implements OnInit {
     userInput: string = '';
     loading: boolean = false;
     selectedImage: string | null = null; // Immagine selezionata per la modale
+    showScrollButton: boolean = false;  // Variabile per controllare la visibilità del bottone
+    @ViewChild('chatMessages') chatMessages!: ElementRef; // Riferimento alla chat
     @ViewChild('fileInput') fileInput: any;
 
     constructor(private openAIService: OpenAIService) {}
@@ -37,11 +39,13 @@ export class ChatComponent implements OnInit {
             this.loading = false;
             if (!!res) {
                 this.displayMessages.push({ role: 'assistant', content: res });
+                this.checkScrollPosition()
             }
         });
     }
 
     sendMessage() {
+        this.checkScrollPosition()
         if (!this.userInput.trim() && Object.keys(this.imagesInput).length === 0) return;
 
         const userMessage = {
@@ -75,8 +79,6 @@ export class ChatComponent implements OnInit {
         const files = event.target.files;
         if (!files || files.length === 0) return;
 
-        console.log(files)
-
         const imageEncodingObservables = Array.from(files as File[]).map((file: File) => {
             return this.openAIService.encodeImage(file).pipe(
                 // Salva nel localStorage la mappa file -> base64
@@ -98,7 +100,6 @@ export class ChatComponent implements OnInit {
                 } else {
                     this.imagesInputContent = { role: 'user', content: content };
                 }
-                console.log(this.imagesInputContent)
             },
             error: (error) => console.error('Errore nel caricamento immagini:', error),
         });
@@ -122,5 +123,19 @@ export class ChatComponent implements OnInit {
 
     closeImageModal() {
         this.selectedImage = null;
+    }
+
+    checkScrollPosition() {
+        const chatMessagesElement = this.chatMessages.nativeElement;
+        const isAtBottom = chatMessagesElement.scrollHeight - chatMessagesElement.scrollTop === chatMessagesElement.clientHeight;
+        this.showScrollButton = !isAtBottom; // Mostra il bottone se non siamo in fondo
+    }
+
+    scrollToBottom() {
+        const chatMessagesElement = this.chatMessages.nativeElement;
+        chatMessagesElement.scrollTo({
+            top: chatMessagesElement.scrollHeight,
+            behavior: 'smooth'  // Aggiungi lo scroll fluido
+        });
     }
 }

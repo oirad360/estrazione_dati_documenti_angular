@@ -1,5 +1,5 @@
 <div class="chat-container">
-    <div class="chat-messages">
+    <div class="chat-messages" #chatMessages (scroll)="checkScrollPosition()">
         <div *ngFor="let message of displayMessages" class="message" [ngClass]="message.role">
             <!-- Messaggio utente (nuvoletta a destra) -->
             <div *ngIf="message.role === 'user'" class="bubble user">
@@ -32,17 +32,22 @@
         </div>
     </div>
 
-    <div class="chat-input">
-        <div class="input-bar">
-            <button class="icon-button attach-button" (click)="fileInput.click()">
-                <i class="fa fa-paperclip"></i>
-            </button>
-            <input #fileInput type="file" multiple (change)="handleImageUpload($event)" accept="image/*" />
-            <textarea [(ngModel)]="userInput" placeholder="Scrivi un messaggio..." class="input-text"></textarea>
-            <button class="icon-button send-button" (click)="sendMessage()" [disabled]="loading || (!userInput.trim() && imagesPreview.length === 0)">
-                <i class="fa fa-paper-plane"></i>
-            </button>
+    <div class="wrapper">
+        <div class="chat-input">
+            <div class="input-bar">
+                <button class="icon-button attach-button" (click)="fileInput.click()">
+                    <i class="fa fa-paperclip"></i>
+                </button>
+                <input #fileInput type="file" multiple (change)="handleImageUpload($event)" accept="image/*" />
+                <textarea [(ngModel)]="userInput" placeholder="Scrivi un messaggio..." class="input-text"></textarea>
+                <button class="icon-button send-button" (click)="sendMessage()" [disabled]="loading || (!userInput.trim() && imagesPreview.length === 0)">
+                    <i class="fa fa-paper-plane"></i>
+                </button>
+            </div>
         </div>
+        <button *ngIf="showScrollButton" class="scroll-to-bottom-btn" (click)="scrollToBottom()">
+            <i class="fas fa-arrow-down"></i>  <!-- Icona freccia verso il basso -->
+        </button>
     </div>
 
 
