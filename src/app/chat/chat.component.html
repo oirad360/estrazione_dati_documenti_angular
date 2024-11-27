@@ -1,10 +1,13 @@
 <div class="chat-container">
+    <header class="chat-header">
+        <h2>Estrazione Dati Documenti</h2>
+    </header>
     <div class="chat-messages" #chatMessages (scroll)="checkScrollPosition()">
         <div *ngFor="let message of displayMessages" class="message" [ngClass]="message.role">
             <!-- Messaggio utente (nuvoletta a destra) -->
             <div *ngIf="message.role === 'user'" class="bubble user">
                 {{ message.content }}
-                <div *ngIf="message.images && message.images.length > 0" class="image-previews user-images">
+                <div *ngIf="message.images && message.images.length > 0" class="image-previews">
                     <img
                             *ngFor="let img of message.images"
                             [src]="img"
@@ -45,7 +48,7 @@
                 </button>
             </div>
         </div>
-        <button *ngIf="showScrollButton" class="scroll-to-bottom-btn" (click)="scrollToBottom()">
+        <button class="scroll-to-bottom-btn" [class.show]="showScrollButton" (click)="scrollToBottom()">
             <i class="fas fa-arrow-down"></i>  <!-- Icona freccia verso il basso -->
         </button>
     </div>

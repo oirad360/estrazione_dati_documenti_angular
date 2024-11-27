@@ -38,8 +38,12 @@ export class ChatComponent implements OnInit {
         this.openAIService.sendMessageResponse.subscribe((res) => {
             this.loading = false;
             if (!!res) {
-                this.displayMessages.push({ role: 'assistant', content: res });
-                this.checkScrollPosition()
+                this.addMessage('assistant', res);
+                setTimeout(() => {
+                    if (!this.isUserAtBottom()) {
+                        this.checkScrollPosition()
+                    }
+                }, 0); // Permette al DOM di aggiornarsi prima dello scroll
             }
         });
     }
@@ -48,12 +52,7 @@ export class ChatComponent implements OnInit {
         this.checkScrollPosition()
         if (!this.userInput.trim() && Object.keys(this.imagesInput).length === 0) return;
 
-        const userMessage = {
-            role: 'user',
-            content: this.userInput,
-            images: Object.values(this.imagesInput) // Array di immagini in base64
-        };
-        this.displayMessages.push(userMessage);
+        this.addMessage('user', this.userInput, Object.values(this.imagesInput));
 
         this.loading = true;
 
@@ -129,6 +128,25 @@ export class ChatComponent implements OnInit {
         const chatMessagesElement = this.chatMessages.nativeElement;
         const isAtBottom = chatMessagesElement.scrollHeight - chatMessagesElement.scrollTop === chatMessagesElement.clientHeight;
         this.showScrollButton = !isAtBottom; // Mostra il bottone se non siamo in fondo
+    }
+
+    isUserAtBottom(): boolean {
+        const chatMessages = this.chatMessages.nativeElement;
+        return (
+            chatMessages.scrollHeight - chatMessages.scrollTop <= chatMessages.clientHeight + 10
+        );
+    }
+
+    addMessage(role: string, content: string, images?: string[]): void {
+        const atBottom = this.isUserAtBottom(); // Verifica se l'utente è al fondo
+        this.displayMessages.push({ role, content, images });
+
+        if (atBottom) {
+            // Effettua lo scroll automatico
+            setTimeout(() => {
+                this.scrollToBottom();
+            }, 0); // Permette al DOM di aggiornarsi prima dello scroll
+        }
     }
 
     scrollToBottom() {
