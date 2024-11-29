@@ -7,13 +7,13 @@
             <!-- Messaggio utente (nuvoletta a destra) -->
             <div *ngIf="message.role === 'user'" class="bubble user">
                 {{ message.content }}
-                <div *ngIf="message.images && message.images.length > 0" class="image-previews">
+                <div *ngIf="message.imagesInput && message.imagesInput.length > 0" class="image-previews">
                     <img
-                            *ngFor="let img of message.images"
-                            [src]="img"
+                            *ngFor="let el of message.imagesInput"
+                            [src]="el.base64url"
                             alt="Anteprima immagine"
                             class="image-preview"
-                            (click)="openImageModal(img)"
+                            (click)="openImageModal(el.base64url)"
                     />
                 </div>
             </div>
@@ -28,10 +28,10 @@
     </div>
 
     <!-- Anteprime delle immagini selezionate -->
-    <div class="image-previews" *ngIf="imagesPreview.length > 0">
-        <div class="image-preview-wrapper" *ngFor="let preview of imagesPreview; index as i">
-            <img [src]="preview" alt="Anteprima immagine" class="image-preview" />
-            <div class="remove-icon" (click)="removeImage(i)">&#10006;</div>
+    <div class="image-previews" *ngIf="imagesInput.length > 0">
+        <div class="image-preview-wrapper" *ngFor="let imageInput of imagesInput">
+            <img [src]="imageInput.base64url" alt="Anteprima immagine" class="image-preview" />
+            <div class="remove-icon" (click)="removeImage(imageInput.filename)">&#10006;</div>
         </div>
     </div>
 
@@ -43,8 +43,8 @@
                 </button>
                 <input #fileInput type="file" multiple (change)="handleImageUpload($event)" accept="image/*" />
                 <textarea [(ngModel)]="userInput" placeholder="Scrivi un messaggio..." class="input-text" (keydown)="handleKeyDown($event)"></textarea>
-                <button class="icon-button send-button" (click)="sendMessage()" [disabled]="loading || (!userInput.trim() && imagesPreview.length === 0)"
-                        [class.disabled]="loading || (!userInput.trim() && imagesPreview.length === 0)">
+                <button class="icon-button send-button" (click)="sendMessage()" [disabled]="loading || (!userInput.trim() && imagesInput.length === 0)"
+                        [class.disabled]="loading || (!userInput.trim() && imagesInput.length === 0)">
                     <i class="fa fa-paper-plane"></i>
                 </button>
             </div>

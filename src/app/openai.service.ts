@@ -178,12 +178,13 @@ export class OpenAIService {
     }
 
     // Metodo per codificare immagini in Base64
-    encodeImage(file: File): Observable<string> {
-        return new Observable<string>((observer) => {
+    encodeImage(file: File): Observable<{filename: string, base64url: string}> {
+        return new Observable<{filename: string, base64url: string}>((observer) => {
             const reader = new FileReader();
             reader.onload = () => {
                 const base64String = (reader.result as string).split(',')[1];
-                observer.next(`data:image/${file.type.split('/')[1]};base64,${base64String}`);
+                const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+                observer.next({filename: uniqueId + '/' + file.name, base64url: `data:image/${file.type.split('/')[1]};base64,${base64String}`});
                 observer.complete();
             };
             reader.onerror = (error) => observer.error(error);

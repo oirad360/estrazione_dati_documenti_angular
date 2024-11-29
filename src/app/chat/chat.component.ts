@@ -20,11 +20,9 @@ import { MarkdownComponent, MarkdownModule } from 'ngx-markdown';
 })
 export class ChatComponent implements OnInit {
 
-    displayMessages: {role: string, content: string, images?: string[]}[] = [];
-    imagesInputContent: any;
-    imagesInput: Record<string, string> = {};
+    displayMessages: {role: string, content: string, imagesInput?: {filename: string, base64url: string}[]}[] = [];
     imagesInputHistory: Record<string, string> = {};
-    imagesPreview: string[] = [];
+    imagesInput: {filename: string, base64url: string}[] = [];
     userInput: string = '';
     loading: boolean = false;
     selectedImage: string | null = null; // Immagine selezionata per la modale
@@ -51,28 +49,32 @@ export class ChatComponent implements OnInit {
 
     sendMessage() {
         this.checkScrollPosition()
-        if (!this.userInput.trim() && Object.keys(this.imagesInput).length === 0) return;
+        if (!this.userInput.trim() && this.imagesInput.length === 0) return;
 
-        this.addMessage('user', this.userInput, Object.values(this.imagesInput));
+        this.addMessage('user', this.userInput, this.imagesInput);
 
         this.loading = true;
 
-        if (!!this.imagesInputContent) {
-            const paths = Object.keys(this.imagesInput).join('\n');
-            this.userInput = `${this.userInput}\n\npaths:\n${paths}`;
+        if (this.imagesInput.length > 0) {
+            this.userInput = `${this.userInput}\n\npaths:`;
+            this.imagesInput.forEach((el) => {
+                this.userInput = this.userInput + '\n' + el.filename;
+                this.imagesInputHistory[el.filename] = el.base64url;
+            })
             this.fileInput.nativeElement.value = '';
         }
 
-        for (let imagesInputKey in this.imagesInput) {
-            this.imagesInputHistory[imagesInputKey] = this.imagesInput[imagesInputKey];
-        }
-
-        this.openAIService.sendMessage(this.userInput, this.imagesInputHistory, this.imagesInputContent);
+        this.openAIService.sendMessage(
+            this.userInput,
+            this.imagesInputHistory,
+            {
+                role: 'user',
+                content: this.imagesInput.map((imageInput) => ({ type: 'image_url', image_url: { url: imageInput.base64url } }))
+            }
+        );
 
         this.userInput = '';
-        this.imagesInputContent = null;
-        this.imagesInput = {};
-        this.imagesPreview = [];
+        this.imagesInput = [];
     }
 
     handleImageUpload(event: any) {
@@ -80,26 +82,13 @@ export class ChatComponent implements OnInit {
         if (!files || files.length === 0) return;
 
         const imageEncodingObservables = Array.from(files as File[]).map((file: File) => {
-            return this.openAIService.encodeImage(file).pipe(
-                // Salva nel localStorage la mappa file -> base64
-                tap((base64String) => {
-                    const fileName = file.name;
-                    const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-                    this.imagesInput[uniqueId + '/' + fileName] = base64String;
-                    this.imagesPreview.push(base64String);
-                })
-            );
+            return this.openAIService.encodeImage(file);
         });
 
         // Codifica tutte le immagini in parallelo
         forkJoin(imageEncodingObservables).subscribe({
-            next: (base64images) => {
-                const content = base64images.map((url) => ({ type: 'image_url', image_url: { url } }));
-                if (!!this.imagesInputContent) {
-                    this.imagesInputContent = { role: 'user', content: [...this.imagesInputContent.content, ...content] };
-                } else {
-                    this.imagesInputContent = { role: 'user', content: content };
-                }
+            next: (res: {filename: string, base64url: string}[]) => {
+                this.imagesInput = [...this.imagesInput, ...res]
             },
             error: (error) => console.error('Errore nel caricamento immagini:', error),
         });
@@ -107,14 +96,8 @@ export class ChatComponent implements OnInit {
         event.target.value = null;
     }
 
-    removeImage(index: number) {
-        const keys = Object.keys(this.imagesInput); // Ottieni tutte le chiavi di imagesInput
-        const keyToRemove = keys[index]; // Trova la chiave corrispondente all'indice
-
-        if (keyToRemove) {
-            delete this.imagesInput[keyToRemove]; // Rimuovi l'immagine da imagesInput
-            this.imagesPreview.splice(index, 1); // Rimuovi l'anteprima dall'array
-        }
+    removeImage(filename: string) {
+        this.imagesInput = this.imagesInput.filter((el) => el.filename !== filename);
     }
 
     openImageModal(image: string) {
@@ -138,9 +121,9 @@ export class ChatComponent implements OnInit {
         );
     }
 
-    addMessage(role: string, content: string, images?: string[]): void {
+    addMessage(role: string, content: string, imagesInput?: {filename: string, base64url: string}[]): void {
         const atBottom = this.isUserAtBottom(); // Verifica se l'utente è al fondo
-        this.displayMessages.push({ role, content, images });
+        this.displayMessages.push({ role, content, imagesInput });
 
         if (atBottom) {
             // Effettua lo scroll automatico
@@ -155,15 +138,15 @@ export class ChatComponent implements OnInit {
         const chatMessagesElement = this.chatMessages.nativeElement;
         chatMessagesElement.scrollTo({
             top: chatMessagesElement.scrollHeight,
-            behavior: 'smooth'  // Aggiungi lo scroll fluido
+            behavior: 'smooth'
         });
         const handleScroll = () => {
             const isAtBottom = chatMessagesElement.scrollHeight - chatMessagesElement.scrollTop === chatMessagesElement.clientHeight;
 
             if (isAtBottom) {
-                this.isAutoScrolling = false; // Rimuovi il flag solo quando lo scroll è completato
-                this.showScrollButton = false; // Nascondi il pulsante quando siamo in fondo
-                chatMessagesElement.removeEventListener('scroll', handleScroll); // Rimuovi il listener
+                this.isAutoScrolling = false;
+                this.showScrollButton = false;
+                chatMessagesElement.removeEventListener('scroll', handleScroll);
             }
         };
 
