@@ -89,7 +89,7 @@ export class OpenAIService {
                     },
                     {
                         role: 'user',
-                        content: base64images.map((url) => ({ type: 'image_url', image_url: { url } }))/* as ChatCompletionContentPartImage[],*/
+                        content: base64images.map((url) => ({ type: 'image_url', image_url: { url } }))
                     },
                 ],
             })

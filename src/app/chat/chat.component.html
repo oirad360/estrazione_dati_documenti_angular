@@ -43,7 +43,8 @@
                 </button>
                 <input #fileInput type="file" multiple (change)="handleImageUpload($event)" accept="image/*" />
                 <textarea [(ngModel)]="userInput" placeholder="Scrivi un messaggio..." class="input-text" (keydown)="handleKeyDown($event)"></textarea>
-                <button class="icon-button send-button" (click)="sendMessage()" [disabled]="loading || (!userInput.trim() && imagesPreview.length === 0)">
+                <button class="icon-button send-button" (click)="sendMessage()" [disabled]="loading || (!userInput.trim() && imagesPreview.length === 0)"
+                        [class.disabled]="loading || (!userInput.trim() && imagesPreview.length === 0)">
                     <i class="fa fa-paper-plane"></i>
                 </button>
             </div>

@@ -318,11 +318,11 @@ input[type="file"] {
 
 .input-bar .send-button {
     margin-right: 5px;
+    animation: shake 0.5s ease-in-out;
 }
 
-/* Animazione per l'icona di invio */
-.input-bar .send-button {
-    animation: shake 0.5s ease-in-out;
+.input-bar .icon-button.disabled {
+    background-color: darkgrey;
 }
 
 @keyframes shake {
