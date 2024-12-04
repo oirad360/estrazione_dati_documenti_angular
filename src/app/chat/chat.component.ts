@@ -28,15 +28,19 @@ export class ChatComponent implements OnInit {
     selectedImage: string | null = null; // Immagine selezionata per la modale
     showScrollButton: boolean = false;  // Variabile per controllare la visibilità del bottone
     isAutoScrolling = false;
+    totalTokens: {tokenCountInput: number, tokenCountOutput: number};
     @ViewChild('chatMessages') chatMessages!: ElementRef; // Riferimento alla chat
     @ViewChild('fileInput') fileInput: any;
 
-    constructor(private openAIService: OpenAIService) {}
+    constructor(private openAIService: OpenAIService) {
+        this.totalTokens = { tokenCountOutput: 0, tokenCountInput: 0}
+    }
 
     ngOnInit(): void {
         this.openAIService.sendMessageResponse.subscribe((res) => {
             this.loading = false;
             if (!!res) {
+                this.totalTokens = this.openAIService.getTokenCount(); // Aggiorna il conteggio dei token
                 this.addMessage('assistant', res);
                 setTimeout(() => {
                     if (!this.isUserAtBottom()) {
@@ -67,10 +71,10 @@ export class ChatComponent implements OnInit {
         this.openAIService.sendMessage(
             this.userInput,
             this.imagesInputHistory,
-            {
+            this.imagesInput.length > 0 ? {
                 role: 'user',
                 content: this.imagesInput.map((imageInput) => ({ type: 'image_url', image_url: { url: imageInput.base64url } }))
-            }
+            } : null
         );
 
         this.userInput = '';
@@ -160,6 +164,14 @@ export class ChatComponent implements OnInit {
             // Invia il messaggio
             this.sendMessage();
         }
+    }
+
+    inputPrice() {
+        return this.totalTokens.tokenCountInput * 2.5/1000000
+    }
+
+    outputPrice() {
+        return this.totalTokens.tokenCountOutput * 10/1000000
     }
 
 }

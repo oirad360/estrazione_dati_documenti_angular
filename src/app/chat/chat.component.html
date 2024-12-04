@@ -1,6 +1,11 @@
 <div class="chat-container">
     <header class="chat-header">
         <h2>Estrazione Dati Documenti</h2>
+        <div>
+            <p>input token: {{ totalTokens.tokenCountInput }}, {{ inputPrice() }}$</p>
+            <p>output token: {{ totalTokens.tokenCountOutput }}, {{ outputPrice() }}$</p>
+            <p>total: {{ outputPrice() + inputPrice() }}$</p>
+        </div>
     </header>
     <div class="chat-messages" #chatMessages (scroll)="checkScrollPosition()">
         <div *ngFor="let message of displayMessages" class="message" [ngClass]="message.role">
