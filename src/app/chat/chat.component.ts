@@ -1,9 +1,9 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { forkJoin, tap } from 'rxjs';
+import { forkJoin } from 'rxjs';
 import { OpenAIService } from '../openai.service';
 import { FormsModule } from '@angular/forms';
 import { NgClass, NgForOf, NgIf } from '@angular/common';
-import { MarkdownComponent, MarkdownModule } from 'ngx-markdown';
+import { MarkdownComponent } from 'ngx-markdown';
 
 @Component({
     selector: 'app-chat',

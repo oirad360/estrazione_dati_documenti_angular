@@ -70,12 +70,8 @@ export class OpenAIService {
             }
         }
     ];
-    private tokenCountInput = 0;
-    private tokenCountOutput = 0;
-    private tokenPatenteInput = 0;
-    private tokenPatenteOutput = 0;
-    private tokenCartaInput = 0;
-    private tokenCartaOutput = 0;
+    private tokenInputCount = 0;
+    private tokenOutputCount = 0;
     sendMessageResponse: BehaviorSubject<string | null> = new BehaviorSubject<string | null>('')
     private functionsMap: Record<string, Function> = {
         'estrazioneDatiPatente': this.estrazioneDatiPatente.bind(this),
@@ -101,8 +97,8 @@ export class OpenAIService {
             })
         ).pipe(
             tap((res) => {
-                this.tokenPatenteInput += res.usage?.prompt_tokens || 0;
-                this.tokenPatenteOutput += res.usage?.completion_tokens || 0;
+                this.tokenInputCount += res.usage?.prompt_tokens || 0;
+                this.tokenOutputCount += res.usage?.completion_tokens || 0;
             })
         );
     }
@@ -124,8 +120,8 @@ export class OpenAIService {
             })
         ).pipe(
             tap((res) => {
-                this.tokenCartaInput += res.usage?.prompt_tokens || 0;
-                this.tokenCartaOutput += res.usage?.completion_tokens || 0;
+                this.tokenInputCount += res.usage?.prompt_tokens || 0;
+                this.tokenOutputCount += res.usage?.completion_tokens || 0;
             })
         );
     }
@@ -144,6 +140,8 @@ export class OpenAIService {
             })
         ).subscribe((res) => {
             const response = res.choices[0].message
+            this.tokenInputCount += res.usage?.prompt_tokens || 0;
+            this.tokenOutputCount += res.usage?.completion_tokens || 0;
             this.messages.push(response)
             if (response.tool_calls) {
                 // Gestisci tutte le chiamate ai tool
@@ -182,8 +180,8 @@ export class OpenAIService {
                                 messages: this.messages,
                             })
                         ).subscribe((completion) => {
-                            this.tokenCountInput = (completion.usage?.prompt_tokens || 0) + this.tokenCartaInput + this.tokenPatenteInput;
-                            this.tokenCountOutput = (completion.usage?.completion_tokens || 0) + this.tokenCartaOutput + this.tokenPatenteOutput;
+                            this.tokenInputCount += completion.usage?.prompt_tokens || 0;
+                            this.tokenOutputCount += completion.usage?.completion_tokens || 0;
                             this.sendMessageResponse.next(completion.choices[0].message.content);
                             this.messages.push(completion.choices[0].message);
                         })
@@ -191,8 +189,6 @@ export class OpenAIService {
                     error: (err) => console.error('Errore nella gestione delle tool_calls:', err),
                 });
             } else {
-                this.tokenCountInput = (res.usage?.prompt_tokens || 0) + this.tokenCartaInput + this.tokenPatenteInput;
-                this.tokenCountOutput = (res.usage?.completion_tokens || 0) + this.tokenCartaOutput + this.tokenPatenteOutput;
                 this.sendMessageResponse.next(res.choices[0].message.content)
             }
         })
@@ -200,8 +196,8 @@ export class OpenAIService {
 
     getTokenCount(): {tokenCountInput: number, tokenCountOutput: number} {
         return {
-            tokenCountInput: this.tokenCountInput,
-            tokenCountOutput: this.tokenCountOutput
+            tokenCountInput: this.tokenInputCount,
+            tokenCountOutput: this.tokenOutputCount
         };
     }
 
